@@ -1,0 +1,10 @@
+Table 2. Learning to Find Higher Bonus B - Replication
+               Coefficient  Std. Error  p-value
+Task                0.0146      0.0710   0.8365
+Task x Random       0.1143      0.0989   0.2478
+Task x Strong       0.2824      0.1052   0.0074
+Observations: 9,610
+Participant fixed effects: 961
+R-squared: 0.13796
+Within R-squared: 0.00226
+Standard errors clustered by participant.

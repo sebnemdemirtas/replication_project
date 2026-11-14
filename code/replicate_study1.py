@@ -70,8 +70,6 @@ def rank_averages(task_data, outcome):
     grouped = data.groupby(group)[outcome]
     results = grouped.mean().to_frame("average")
     counts = grouped.size()
-
-    # Sum deviations by participant for clustered standard errors.
     data["deviation"] = data[outcome] - grouped.transform("mean")
     cluster_sums = data.groupby(group + ["userid"])["deviation"].sum()
     squared_sums = cluster_sums.pow(2).groupby(level=group).sum()
@@ -83,8 +81,6 @@ def rank_averages(task_data, outcome):
     results["lower"] = results["average"] - margin
     results["upper"] = results["average"] + margin
     return results.reset_index().rename(columns={"cond": "condition"})
-
-
 
 def plot_rank_averages(ax, results):
     conditions = [
@@ -119,6 +115,9 @@ def plot_rank_averages(ax, results):
 def make_figure3(data, output_file):
     task_groups = [("Task 1", 1, 1), ("Tasks 2–5", 2, 5), ("Tasks 6–10", 6, 10)]
     fig, axes = plt.subplots(3, 1, figsize=(7, 7), sharex=True)
+    fig.suptitle(
+        "Figure 3. Search Probability by Rank and Condition (Study 1) -- Replicated",
+        fontsize=12)
 
     for ax, (title, start, end) in zip(axes, task_groups):
         task_data = data.loc[data["searchtask"].between(start, end)]
@@ -127,10 +126,35 @@ def make_figure3(data, output_file):
         ax.set_ylabel("Pr(Search)")
         ax.yaxis.set_major_locator(MultipleLocator(0.10))
         ax.yaxis.set_minor_locator(MultipleLocator(0.05))
-    axes[0].legend()
     axes[-1].set_xlabel("Rank")
+    handles, labels = axes[0].get_legend_handles_labels()
+    fig.legend(handles, labels, loc="lower center", ncol=3)
+    fig.tight_layout(rect=(0, 0.06, 1, 1))
+    fig.savefig(output_file)
+    plt.close(fig)
+
+########################################################################
+# Figure 4
+########################################################################
+
+def make_figure4(data, output_file):
+    max_bonus_a = data.groupby(["userid", "searchtask"])["bonusA"].transform("max")
+    first_clicks = data.loc[data["clickorder"] == 1].copy()
+    first_clicks["forgone_bonus_a"] = max_bonus_a.loc[first_clicks.index] - first_clicks["bonusA"]
+    results = rank_averages(first_clicks, "forgone_bonus_a")
+
+    fig, ax = plt.subplots(figsize=(7, 3.5))
+    fig.suptitle(
+        "Figure 4. Forgone Bonus A by Rank of First-Clicked Item (Study 1) -- Replicated",
+        fontsize=11)
+    plot_rank_averages(ax, results)
+    ax.set_xlabel("First-Clicked Item Rank")
+    ax.set_ylabel("Forgone Bonus A\non First Click")
+    ax.yaxis.set_major_locator(MultipleLocator(1))
+    ax.yaxis.set_minor_locator(MultipleLocator(0.5))
+    ax.legend(loc="upper center", bbox_to_anchor=(0.5, -0.22), ncol=3)
     fig.tight_layout()
-    fig.savefig(output_file, dpi=300)
+    fig.savefig(output_file)
     plt.close(fig)
 
 ########################################################################
@@ -141,3 +165,4 @@ project_dir = Path(__file__).resolve().parent.parent
 data = load_data(project_dir)
 make_table2(data, project_dir / "results" / "tables" / "table2.csv")
 make_figure3(data, project_dir / "results" / "figures" / "figure3.png")
+make_figure4(data, project_dir / "results" / "figures" / "figure4.png")

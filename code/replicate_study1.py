@@ -5,7 +5,6 @@ import pandas as pd
 import statsmodels.api as sm
 import matplotlib.pyplot as plt
 from matplotlib.ticker import MultipleLocator
-from scipy.stats import t
 
 ########################################################################
 # Load the authors' Study 1 data
